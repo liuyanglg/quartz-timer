@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.zjaxn.jobs.support.CmpSqlQuery.*;
+import static com.zjaxn.jobs.support.CmpSqlWords.*;
 
 /**
  * @Package : com.zjaxn.jobs.support

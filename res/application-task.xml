@@ -27,7 +27,7 @@
     <bean id="cmpCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="cmpJobDetail"/>
         <!--执行时间-->
-        <property name="cronExpression" value="0 0/5 * * * ?"/>
+        <property name="cronExpression" value="0 0/1 * * * ?"/>
     </bean>
 
     <bean id="cmpScheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
