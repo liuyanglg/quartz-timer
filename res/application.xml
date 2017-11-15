@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/context 
            http://www.springframework.org/schema/context/spring-context-3.0.xsd
@@ -10,24 +11,26 @@
            http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
            http://www.springframework.org/schema/aop
            http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
-           
-	<context:component-scan base-package="com.zjaxn" />
-	
-	<bean id="propertyConfigurer" class="com.zjaxn.jobs.utils.PropertyConfigurer">
+
+    <context:component-scan base-package="com.zjaxn"/>
+
+    <bean id="propertyConfigurer" class="com.zjaxn.jobs.utils.PropertyConfigurer">
         <property name="order" value="0"/>
         <property name="ignoreUnresolvablePlaceholders" value="true"/>
         <property name="locations">
             <list>
-            	<value>classpath:resource/jdbc.properties</value>
+                <value>classpath:resource/jdbc.properties</value>
+                <value>classpath:resource/jskp.properties</value>
             </list>
         </property>
     </bean>
 
-
-	<!--<aop:aspectj-autoproxy proxy-target-class="true"/>-->
+    <bean id="springUtil" class="com.zjaxn.jobs.utils.SpringUtil"/>
+    <!--<aop:aspectj-autoproxy proxy-target-class="true"/>-->
 
     <!-- 极速开票审核后台数据源配置1 -->
-    <bean id="dataSourceCenter" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+    <bean id="dataSourceCenter" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
+          destroy-method="close">
         <!-- 基本属性 url、user、password -->
         <property name="driverClassName">
             <value>${cmp.usercenter.jdbc.driver}</value>
@@ -131,5 +134,27 @@
 
     <bean id="cmpDBManager" class="com.zjaxn.jobs.support.CmpDBManager">
         <property name="cmpConnectionFactory" ref="cmpConnectionFactory"/>
+    </bean>
+
+    <bean id="connectionFactory" class="com.zjaxn.jobs.support.ConnectionFactory">
+        <property name="dataSources">
+            <map>
+                <entry key="dataserver" value-ref="dataSourceCmp"/>
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="jskpCmpApiMap" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="jskp.cmp.url" value="${jskp.cmp.url}"/>
+                <entry key="jskp.cmp.api.get.getCardAuditByTaxid" value="${jskp.cmp.api.get.getCardAuditByTaxid}"/>
+                <entry key="jskp.cmp.api.get.getCardAuditByName" value="${jskp.cmp.api.get.getCardAuditByName}"/>
+                <entry key="jskp.cmp.api.get.getCardByName" value="${jskp.cmp.api.get.getCardByName}"/>
+                <entry key="jskp.cmp.api.get.getCardByTaxid" value="${jskp.cmp.api.get.getCardByTaxid}"/>
+                <entry key="jskp.cmp.api.post.updateAuditStatus" value="${jskp.cmp.api.post.updateAuditStatus}"/>
+                <entry key="jskp.cmp.api.post.addCard" value="${jskp.cmp.api.post.addCard}"/>
+            </map>
+        </constructor-arg>
     </bean>
 </beans>
