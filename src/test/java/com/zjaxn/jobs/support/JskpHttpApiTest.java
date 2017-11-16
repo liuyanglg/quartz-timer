@@ -1,20 +1,36 @@
 package com.zjaxn.jobs.support;
 
 import com.base.BaseTest;
-import com.zjaxn.jobs.utils.SpringUtil;
+import com.zjaxn.jobs.utils.model.JskpCard;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+public class JskpHttpApiTest extends BaseTest {
 
-public class JskpHttpApiTest extends BaseTest{
+    @Test
+    public void addCard() throws Exception {
+    }
+
+    @Test
+    public void updateCard() throws Exception {
+        String json = "{\"code\":\"F6FBD3\",\"taxid\":\"330624770720792\",\"name\":\"新昌县天润果业有限公司\",\"address\":\"小将镇迭里村\",\"telephone\":\"13858590190\",\"bank\":\"\",\"account\":\"\",\"type\":\"0\",\"cert\":\"0\",\"source\":\"20\",\"status\":\"0\"}";
+        JskpHttpApi.updateCard("F6FBD3", json);
+    }
+
     @Test
     public void getCardByTaxid() throws Exception {
-        JskpHttpApi.getCardByTaxid("330624770720792");
+        JskpApiResponse jskpApiResponse = JskpHttpApi.getCardByTaxid("330624770720792");
     }
 
     @Test
     public void getCardByName() throws Exception {
         JskpHttpApi.getCardByName("新昌县天润果业有限公司");
+    }
+
+    @Test
+    public void getCardByCode() throws Exception {
+        JskpApiResponse apiResponse = JskpHttpApi.getCardByCode("C3US7U");
+        JskpCard card = apiResponse.getJavaObject(JskpCard.class);
+        System.out.println(card);
     }
 
     @Test

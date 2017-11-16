@@ -9,7 +9,6 @@ import com.zjaxn.jobs.utils.model.JskpCardAudit;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,16 +50,17 @@ public class JskpAutoAuditTask {
         String icbcName = (String) icbcInfoMap.get("name");
         String icbcTaxid = (String) icbcInfoMap.get("credit_code");
 
-        JskpApiResponse<JskpCardAudit> apiResponse = null;
+        JskpApiResponse apiResponse = null;
         try {
             if (icbcTaxid != null) {
                 apiResponse = JskpHttpApi.getCardAuditByTaxid(icbcTaxid);
-            } else if (icbcName != null) {
+            }
+            if (icbcName != null && (apiResponse == null || !apiResponse.getCode().equals("200"))) {
                 apiResponse = JskpHttpApi.getCardAuditByTaxid(icbcName);
             }
 
             if (apiResponse != null && apiResponse.getCode().equals("200")) {
-                cardAudit = apiResponse.getData();
+                cardAudit = apiResponse.getJavaObject(JskpCardAudit.class);
             }
         } catch (Exception e) {
             System.out.println("查询审核数据出错：" + e.getMessage());
@@ -69,22 +69,26 @@ public class JskpAutoAuditTask {
         return cardAudit;
     }
 
-    public JskpCardAudit mergeCardAudit(JskpCardAudit cardAudit) {
-        if ((cardAudit.getTaxid() == null || cardAudit.getTaxid().trim().length() == 0) && (cardAudit.getName() == null || cardAudit.getName().trim().length() == 0)) {
-            return cardAudit;
+    public JskpCard getCard(JskpCardAudit cardAudit) {
+        if (cardAudit == null) {
+            return null;
         }
 
         JskpCard card = null;
-        JskpApiResponse<JskpCard> apiResponse = null;
+        JskpApiResponse apiResponse = null;
         try {
-            if (cardAudit.getName() == null) {
-                apiResponse = JskpHttpApi.getCardByTaxid(cardAudit.getTaxid());
-            } else if (cardAudit.getTaxid() == null) {
-                apiResponse = JskpHttpApi.getCardByName(cardAudit.getName());
+            if (cardAudit.getCode() != null && cardAudit.getCode().trim().length() == 6) {
+                apiResponse = JskpHttpApi.getCardByCode(cardAudit.getCode());
+            } else {
+                if (cardAudit.getTaxid() != null) {
+                    apiResponse = JskpHttpApi.getCardByTaxid(cardAudit.getTaxid());
+                } else if (cardAudit.getName() != null && (apiResponse == null || !apiResponse.getCode().equals("200"))) {
+                    apiResponse = JskpHttpApi.getCardByName(cardAudit.getName());
+                }
             }
 
             if (apiResponse != null && apiResponse.getCode().equals("200")) {
-                card = apiResponse.getData();
+                card = apiResponse.getJavaObject(JskpCard.class);
             }
 
             if (card != null) {
@@ -100,6 +104,23 @@ public class JskpAutoAuditTask {
             e.printStackTrace();
         }
 
+        return card;
+    }
+
+    public JskpCardAudit mergeCardAudit(JskpCardAudit cardAudit, JskpCard card) {
+        if ((cardAudit.getTaxid() == null || cardAudit.getTaxid().trim().length() == 0) && (cardAudit.getName() == null || cardAudit.getName().trim().length() == 0)) {
+            return cardAudit;
+        }
+
+        if (card != null) {
+            if (cardAudit.getTaxid() == null) {
+                cardAudit.setTaxid(card.getTaxid());
+            }
+            if (cardAudit.getName() == null) {
+                cardAudit.setName(card.getName());
+            }
+        }
+
         return cardAudit;
     }
 
@@ -110,16 +131,20 @@ public class JskpAutoAuditTask {
         String icbcName = (String) icbcInfoMap.get("name");
         String icbcTaxid = (String) icbcInfoMap.get("credit_code");
         JskpCardAudit cardAudit = getCardAudit(icbcInfoMap);
+        JskpCard card = getCard(cardAudit);
         if (cardAudit == null) {
             return;
         }
-        cardAudit = mergeCardAudit(cardAudit);
+
+        cardAudit = mergeCardAudit(cardAudit, card);
 
         try {
             if (cardAudit.getTaxid().equals(icbcTaxid) && cardAudit.getName().equals(icbcName)) {
                 JskpHttpApi.updateAuditStatus(cardAudit.getId(), PASS);
                 if (cardAudit.getCode() == null || cardAudit.getCode().trim().length() == 0) {
                     JskpHttpApi.addCard(cardAudit.toJson());
+                } else if (card != null && (!card.getTaxid().equals(cardAudit.getTaxid()) || !card.getName().equals(cardAudit.getName()))) {
+                    JskpHttpApi.updateCard(cardAudit.getCode(), cardAudit.toJson());
                 }
             } else {
                 JskpHttpApi.updateAuditStatus(cardAudit.getId(), UNPASS);

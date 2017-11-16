@@ -147,4 +147,23 @@ public class JskpCardAudit {
         return json;
     }
 
+    @Override
+    public String toString() {
+        return "JskpCardAudit{" +
+                "id=" + id +
+                ", code='" + code + '\'' +
+                ", taxid='" + taxid + '\'' +
+                ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
+                ", telephone='" + telephone + '\'' +
+                ", bank='" + bank + '\'' +
+                ", account='" + account + '\'' +
+                ", source='" + source + '\'' +
+                ", type='" + type + '\'' +
+                ", note='" + note + '\'' +
+                ", createtime='" + createtime + '\'' +
+                ", status=" + status +
+                ", cert=" + cert +
+                '}';
+    }
 }

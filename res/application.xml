@@ -152,8 +152,10 @@
                 <entry key="jskp.cmp.api.get.getCardAuditByName" value="${jskp.cmp.api.get.getCardAuditByName}"/>
                 <entry key="jskp.cmp.api.get.getCardByName" value="${jskp.cmp.api.get.getCardByName}"/>
                 <entry key="jskp.cmp.api.get.getCardByTaxid" value="${jskp.cmp.api.get.getCardByTaxid}"/>
+                <entry key="jskp.cmp.api.get.getCardByCode" value="${jskp.cmp.api.get.getCardByCode}"/>
                 <entry key="jskp.cmp.api.post.updateAuditStatus" value="${jskp.cmp.api.post.updateAuditStatus}"/>
                 <entry key="jskp.cmp.api.post.addCard" value="${jskp.cmp.api.post.addCard}"/>
+                <entry key="jskp.cmp.api.put.updateCard" value="${jskp.cmp.api.put.updateCard}"/>
             </map>
         </constructor-arg>
     </bean>

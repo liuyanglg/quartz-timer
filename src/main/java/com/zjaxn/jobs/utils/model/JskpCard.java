@@ -100,4 +100,21 @@ public class JskpCard {
     public void setAudit(String audit) {
         this.audit = audit;
     }
+
+    @Override
+    public String toString() {
+        return "JskpCard{" +
+                "code='" + code + '\'' +
+                ", taxid='" + taxid + '\'' +
+                ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
+                ", telephone='" + telephone + '\'' +
+                ", bank='" + bank + '\'' +
+                ", account='" + account + '\'' +
+                ", type='" + type + '\'' +
+                ", cert='" + cert + '\'' +
+                ", source='" + source + '\'' +
+                ", audit='" + audit + '\'' +
+                '}';
+    }
 }
