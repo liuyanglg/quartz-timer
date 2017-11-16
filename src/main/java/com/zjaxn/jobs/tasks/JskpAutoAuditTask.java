@@ -28,6 +28,9 @@ public class JskpAutoAuditTask {
             Connection conn = ConnectionFactory.getConnection("dataserver");
             total = JskpJdbcUtil.count(conn, countSql);
             pages = total / pageSize;
+            if(total%pageSize!=0){
+                pages++;
+            }
             for (int i = 0; i < pages; i++) {
                 list = JskpJdbcUtil.queryPage(conn, queryPageSql, i * pageSize, pageSize);
                 if (list != null) {
