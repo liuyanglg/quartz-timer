@@ -28,8 +28,9 @@ public class JskpHttpApiTest extends BaseTest {
 
     @Test
     public void getCardByCode() throws Exception {
-        JskpApiResponse apiResponse = JskpHttpApi.getCardByCode("C3US7U");
-        JskpCard card = apiResponse.getJavaObject(JskpCard.class);
+        JskpApiResponse<JskpCard> apiResponse = JskpHttpApi.getCardByCode("C3US7U");
+//        JskpCard card = apiResponse.getJavaObject(JskpCard.class);
+        JskpCard card = apiResponse.getData();
         System.out.println(card);
     }
 

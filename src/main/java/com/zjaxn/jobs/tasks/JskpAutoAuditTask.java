@@ -53,7 +53,7 @@ public class JskpAutoAuditTask {
         String icbcName = (String) icbcInfoMap.get("name");
         String icbcTaxid = (String) icbcInfoMap.get("credit_code");
 
-        JskpApiResponse apiResponse = null;
+        JskpApiResponse<JskpCardAudit> apiResponse = null;
         try {
             if (icbcTaxid != null) {
                 apiResponse = JskpHttpApi.getCardAuditByTaxid(icbcTaxid);
@@ -63,7 +63,7 @@ public class JskpAutoAuditTask {
             }
 
             if (apiResponse != null && apiResponse.getCode().equals("200")) {
-                cardAudit = apiResponse.getJavaObject(JskpCardAudit.class);
+                cardAudit = apiResponse.getData();
             }
         } catch (Exception e) {
             System.out.println("查询审核数据出错：" + e.getMessage());
@@ -78,7 +78,7 @@ public class JskpAutoAuditTask {
         }
 
         JskpCard card = null;
-        JskpApiResponse apiResponse = null;
+        JskpApiResponse<JskpCard> apiResponse = null;
         try {
             if (cardAudit.getCode() != null && cardAudit.getCode().trim().length() == 6) {
                 apiResponse = JskpHttpApi.getCardByCode(cardAudit.getCode());
@@ -91,7 +91,7 @@ public class JskpAutoAuditTask {
             }
 
             if (apiResponse != null && apiResponse.getCode().equals("200")) {
-                card = apiResponse.getJavaObject(JskpCard.class);
+                card = apiResponse.getData();
             }
 
             if (card != null) {

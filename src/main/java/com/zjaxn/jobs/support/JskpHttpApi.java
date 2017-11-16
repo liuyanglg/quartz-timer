@@ -1,7 +1,10 @@
 package com.zjaxn.jobs.support;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.zjaxn.jobs.utils.SpringUtil;
+import com.zjaxn.jobs.utils.model.JskpCard;
+import com.zjaxn.jobs.utils.model.JskpCardAudit;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -25,7 +28,7 @@ public class JskpHttpApi {
         }
 
         Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
-        JskpApiResponse apiResponse = null;
+        JskpApiResponse<JskpCardAudit> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.get.getCardAuditByTaxid");
         url = url.replaceFirst("\\{\\S*\\}", taxid.trim());
 
@@ -38,7 +41,7 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, JskpApiResponse.class);
+                apiResponse = JSON.parseObject(result,new TypeReference<JskpApiResponse<JskpCardAudit>>(){});
             }
         } finally {
             if (closeableHttpClient != null) {
@@ -57,7 +60,7 @@ public class JskpHttpApi {
         }
 
         Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
-        JskpApiResponse apiResponse = null;
+        JskpApiResponse<JskpCardAudit> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.get.getCardAuditByName");
         url = url.replaceFirst("\\{\\S*\\}", name.trim());
 
@@ -70,7 +73,7 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, JskpApiResponse.class);
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCardAudit>>(){});
             }
         } finally {
             if (closeableHttpClient != null) {
@@ -89,7 +92,7 @@ public class JskpHttpApi {
         }
 
         Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
-        JskpApiResponse apiResponse = null;
+        JskpApiResponse<JskpCard> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.get.getCardByCode");
         url = url.replaceFirst("\\{\\S*\\}", code.trim());
 
@@ -102,7 +105,7 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, JskpApiResponse.class);
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>(){});
             }
         } finally {
             if (closeableHttpClient != null) {
@@ -121,7 +124,7 @@ public class JskpHttpApi {
         }
 
         Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
-        JskpApiResponse apiResponse = null;
+        JskpApiResponse<JskpCard> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.get.getCardByTaxid");
         url = url.replaceFirst("\\{\\S*\\}", taxid.trim());
 
@@ -134,7 +137,7 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, JskpApiResponse.class);
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>(){});
             }
         } finally {
             if (closeableHttpClient != null) {
@@ -153,7 +156,7 @@ public class JskpHttpApi {
         }
 
         Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
-        JskpApiResponse apiResponse = null;
+        JskpApiResponse<JskpCard> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.get.getCardByName");
         url = url.replaceFirst("\\{\\S*\\}", name.trim());
 
@@ -166,7 +169,7 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, JskpApiResponse.class);
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>(){});
             }
         } finally {
             if (closeableHttpClient != null) {
@@ -186,7 +189,7 @@ public class JskpHttpApi {
         }
 
         Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
-        JskpApiResponse apiResponse = null;
+        JskpApiResponse<JskpCardAudit> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.post.updateAuditStatus");
         url = url.replaceFirst("\\{\\S*\\}", id + "");
 
@@ -203,7 +206,7 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, JskpApiResponse.class);
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCardAudit>>(){});
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -221,7 +224,7 @@ public class JskpHttpApi {
         }
 
         Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
-        JskpApiResponse apiResponse = null;
+        JskpApiResponse<JskpCard> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.post.addCard");
 
         CloseableHttpClient closeableHttpClient = null;
@@ -235,7 +238,7 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, JskpApiResponse.class);
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>(){});
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -256,7 +259,7 @@ public class JskpHttpApi {
         }
 
         Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
-        JskpApiResponse apiResponse = null;
+        JskpApiResponse<JskpCard> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.put.updateCard");
         url = url.replaceFirst("\\{\\S*\\}", code.trim());
 
@@ -271,7 +274,7 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, JskpApiResponse.class);
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>(){});
             }
         } catch (Exception e) {
             e.printStackTrace();
