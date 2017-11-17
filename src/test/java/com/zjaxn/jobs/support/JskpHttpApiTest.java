@@ -23,7 +23,7 @@ public class JskpHttpApiTest extends BaseTest {
 
     @Test
     public void getCardByName() throws Exception {
-        JskpHttpApi.getCardByName("新昌县天润果业有限公司");
+        JskpHttpApi.getCardByName("玉环县德福水性涂料商行");
     }
 
     @Test

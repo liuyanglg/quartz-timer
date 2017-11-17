@@ -23,7 +23,7 @@ public class JskpHttpApi {
         if (taxid == null) {
             return null;
         }
-        if (taxid.trim().length() <= 0) {
+        if (taxid.trim().length() <= 0 || taxid.trim().contains("")) {
             return null;
         }
 
@@ -41,7 +41,8 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result,new TypeReference<JskpApiResponse<JskpCardAudit>>(){});
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCardAudit>>() {
+                });
             }
         } finally {
             if (closeableHttpClient != null) {
@@ -55,7 +56,7 @@ public class JskpHttpApi {
         if (name == null) {
             return null;
         }
-        if (name.trim().length() <= 0) {
+        if (name.trim().length() <= 0 || name.trim().contains(" ")) {
             return null;
         }
 
@@ -73,7 +74,8 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCardAudit>>(){});
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCardAudit>>() {
+                });
             }
         } finally {
             if (closeableHttpClient != null) {
@@ -87,7 +89,7 @@ public class JskpHttpApi {
         if (code == null) {
             return null;
         }
-        if (code.trim().length() != 6) {
+        if (code.trim().length() != 6 || code.trim().contains(" ")) {
             return null;
         }
 
@@ -105,7 +107,8 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>(){});
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>() {
+                });
             }
         } finally {
             if (closeableHttpClient != null) {
@@ -119,7 +122,7 @@ public class JskpHttpApi {
         if (taxid == null) {
             return null;
         }
-        if (taxid.trim().length() <= 0) {
+        if (taxid.trim().length() <= 0 || taxid.trim().contains(" ")) {
             return null;
         }
 
@@ -137,7 +140,8 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>(){});
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>() {
+                });
             }
         } finally {
             if (closeableHttpClient != null) {
@@ -151,7 +155,7 @@ public class JskpHttpApi {
         if (name == null) {
             return null;
         }
-        if (name.trim().length() <= 0) {
+        if (name.trim().length() <= 0 || name.contains(" ")) {
             return null;
         }
 
@@ -169,7 +173,8 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>(){});
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>() {
+                });
             }
         } finally {
             if (closeableHttpClient != null) {
@@ -206,7 +211,8 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCardAudit>>(){});
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCardAudit>>() {
+                });
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -238,7 +244,8 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>(){});
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>() {
+                });
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -250,10 +257,14 @@ public class JskpHttpApi {
         return apiResponse;
     }
 
-    public static JskpApiResponse updateCard(String code,String json) throws Exception {
-        if(code==null){
+    public static JskpApiResponse updateCard(String code, String json) throws Exception {
+        if (code == null) {
             return null;
         }
+        if (code.trim().length() != 6 || code.trim().contains(" ")) {
+            return null;
+        }
+
         if (json == null) {
             return null;
         }
@@ -274,7 +285,8 @@ public class JskpHttpApi {
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>(){});
+                apiResponse = JSON.parseObject(result, new TypeReference<JskpApiResponse<JskpCard>>() {
+                });
             }
         } catch (Exception e) {
             e.printStackTrace();
