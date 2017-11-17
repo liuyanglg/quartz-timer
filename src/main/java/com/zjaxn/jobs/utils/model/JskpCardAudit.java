@@ -1,6 +1,6 @@
 package com.zjaxn.jobs.utils.model;
 
-import com.zjaxn.jobs.utils.StringUtil;
+import com.zjaxn.jobs.temp.StringUtil;
 
 public class JskpCardAudit {
     private Integer id;

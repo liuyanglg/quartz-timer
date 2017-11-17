@@ -4,52 +4,76 @@ import com.zjaxn.jobs.support.ConnectionFactory;
 import com.zjaxn.jobs.support.JskpApiResponse;
 import com.zjaxn.jobs.support.JskpHttpApi;
 import com.zjaxn.jobs.support.JskpJdbcUtil;
+import com.zjaxn.jobs.temp.PropertiesUtil;
 import com.zjaxn.jobs.utils.DateUtil;
 import com.zjaxn.jobs.utils.model.JskpCard;
 import com.zjaxn.jobs.utils.model.JskpCardAudit;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class JskpAutoAuditTask {
     public static final Integer UNAUDIT = 0;
     public static final Integer PASS = 1;
     public static final Integer UNPASS = -1;
 
-    public void autoAuditCard() {
+    private Properties properties;
+    private String key = "jskp.cmp.last.offset";
+    private String path = File.separator + "res" + File.separator + "resource" + File.separator + "jskp" + File.separator + "jskp-query-offset.properties";
+    private Long limitTime = 1000 * 60 * 60 * 5L;
+
+    public void batchAutoAudit() {
+        System.out.println(DateUtil.format(new Date()) + " 自动审核任务开始，限时为：" + getTimeString(limitTime) + "......");
+        Long startTime = System.currentTimeMillis();
+
         String queryPageSql = "SELECT *  FROM mongo_complany LIMIT ?,?;";
         String countSql = "SELECT COUNT(1)  FROM mongo_complany ;";
         List<Map<String, Object>> list = null;
+        int lastOffset = getLastOffset();
+        int auditCounter = 0;
         int total = 0;
         int pageSize = 100;
         int pages = 0;
+
         try {
             Connection conn = ConnectionFactory.getConnection("dataserver");
             total = JskpJdbcUtil.count(conn, countSql);
-            System.out.println(DateUtil.format(new Date()) + " 有" + total + "条工商信息数据需要处理!");
+            total -= lastOffset;
+            System.out.println(DateUtil.format(new Date()) + " 待处理工商信息数据：" + total + "条");
 
             pages = total / pageSize;
             if (total % pageSize != 0) {
                 pages++;
             }
             for (int i = 0; i < pages; i++) {
-                if(i%10==0){
-                    System.out.println(DateUtil.format(new Date()) + " 已处理" + i * 100 + "条工商信息数据!");
-                }
-                list = JskpJdbcUtil.queryPage(conn, queryPageSql, i * pageSize, pageSize);
+                list = JskpJdbcUtil.queryPage(conn, queryPageSql, lastOffset + i * pageSize, pageSize);
                 if (list != null) {
                     for (Map map : list) {
-                        audit(map);
+                        singleAudit(map);
+                        auditCounter++;
                     }
                 }
+                Long interruptTime = System.currentTimeMillis();
+                if (interruptTime - startTime >= limitTime) {
+                    System.out.println(DateUtil.format(new Date()) + " 审核用时：" + getTimeString(interruptTime - startTime) + "，已超过时长限制，停止审核");
+                    break;
+                }
+                Thread.sleep(1);
             }
+
         } catch (SQLException e) {
             System.out.println(DateUtil.format(new Date()) + "查询工商信息出错：" + e.getMessage());
             e.printStackTrace();
+        } catch (InterruptedException e) {
+            System.out.println(DateUtil.format(new Date()) + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            updateLastOffset(lastOffset + auditCounter);
         }
+        Long endTime = System.currentTimeMillis();
+        System.out.println(DateUtil.format(new Date()) + " 此次处理了" + auditCounter + "条工商信息数据，耗时为：" + getTimeString(endTime - startTime));
     }
 
     public JskpCardAudit getCardAudit(Map<String, Object> icbcInfoMap) {
@@ -125,7 +149,7 @@ public class JskpAutoAuditTask {
         return cardAudit;
     }
 
-    public void audit(Map<String, Object> icbcInfoMap) {
+    public void singleAudit(Map<String, Object> icbcInfoMap) {
         if (icbcInfoMap == null) {
             return;
         }
@@ -165,6 +189,25 @@ public class JskpAutoAuditTask {
         }
     }
 
+    public Integer getLastOffset() {
+        Integer offset = null;
+        try {
+            properties = PropertiesUtil.loadProperty(PropertiesUtil.getProjectPath() + path);
+            String offsetStr = properties.getProperty(key);
+            offset = Integer.parseInt(offsetStr);
+        } catch (NumberFormatException e) {
+            offset = null;
+            e.printStackTrace();
+        }
+        return offset;
+    }
+
+    public void updateLastOffset(Integer offset) {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(key, String.valueOf(offset));
+        PropertiesUtil.updateProperty(properties, PropertiesUtil.getProjectPath() + path, map);
+    }
+
     boolean equals(String s1, String s2) {
         if (s1 == null && s2 == null) {
             return true;
@@ -179,6 +222,27 @@ public class JskpAutoAuditTask {
             return true;
         }
         return false;
+    }
+
+    public String getTimeString(Long useTime) {
+        StringBuffer timeBuffer = new StringBuffer();
+        long ms = useTime % 1000;
+        long sec = (useTime / (1000)) % (60);
+        long min = (useTime / (1000 * 60)) % (60);
+        long hour = useTime / (1000 * 60 * 60);
+        if (hour > 0) {
+            timeBuffer.append(hour + "时");
+        }
+        if (min > 0) {
+            timeBuffer.append(min + "分");
+        }
+        if (sec > 0) {
+            timeBuffer.append(sec + "秒");
+        }
+        if (ms > 0) {
+            timeBuffer.append(ms + "毫秒");
+        }
+        return timeBuffer.toString();
     }
 
 }

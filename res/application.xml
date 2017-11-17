@@ -20,13 +20,12 @@
         <property name="locations">
             <list>
                 <value>classpath:resource/jdbc.properties</value>
-                <value>classpath:resource/jskp.properties</value>
+                <value>classpath:resource/jskp/jskp-auto-audit.properties</value>
             </list>
         </property>
     </bean>
 
     <bean id="springUtil" class="com.zjaxn.jobs.utils.SpringUtil"/>
-    <!--<aop:aspectj-autoproxy proxy-target-class="true"/>-->
 
     <!-- 极速开票审核后台数据源配置1 -->
     <bean id="dataSourceCenter" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
