@@ -8,6 +8,7 @@ import com.zjaxn.jobs.temp.PropertiesUtil;
 import com.zjaxn.jobs.utils.DateUtil;
 import com.zjaxn.jobs.utils.model.JskpCard;
 import com.zjaxn.jobs.utils.model.JskpCardAudit;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.sql.Connection;
@@ -15,6 +16,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class JskpAutoAuditTask {
+    public static Logger log = Logger.getLogger(JskpAutoAuditTask.class);
+
     public static final Integer UNAUDIT = 0;
     public static final Integer PASS = 1;
     public static final Integer UNPASS = -1;
@@ -25,7 +28,8 @@ public class JskpAutoAuditTask {
     private Long limitTime = 1000 * 60 * 60 * 5L;
 
     public void batchAutoAudit() {
-        System.out.println(DateUtil.format(new Date()) + " 自动审核任务开始，限时为：" + getTimeString(limitTime) + "......");
+        System.out.println(DateUtil.format(new Date()) + " 自动审核任务开始，限时为：" + getTimeString(limitTime) + "  ......");
+        log.warn(DateUtil.format(new Date()) + " 自动审核任务开始，限时为：" + getTimeString(limitTime) + "......");
         Long startTime = System.currentTimeMillis();
 
         String queryPageSql = "SELECT *  FROM mongo_complany LIMIT ?,?;";
@@ -42,6 +46,7 @@ public class JskpAutoAuditTask {
             total = JskpJdbcUtil.count(conn, countSql);
             total -= lastOffset;
             System.out.println(DateUtil.format(new Date()) + " 待处理工商信息数据：" + total + "条");
+            log.warn(DateUtil.format(new Date()) + " 待处理工商信息数据：" + total + "条");
 
             pages = total / pageSize;
             if (total % pageSize != 0) {
@@ -49,22 +54,33 @@ public class JskpAutoAuditTask {
             }
             for (int i = 0; i < pages; i++) {
                 list = JskpJdbcUtil.queryPage(conn, queryPageSql, lastOffset + i * pageSize, pageSize);
+
+                if (i % 20 == 0) {
+                    System.out.println("已处理数据：" + auditCounter);
+                    log.warn("已处理数据：" + auditCounter);
+                }
+
                 if (list != null) {
                     for (Map map : list) {
                         singleAudit(map);
                         auditCounter++;
                     }
                 }
+
                 Long interruptTime = System.currentTimeMillis();
+
                 if (interruptTime - startTime >= limitTime) {
                     System.out.println(DateUtil.format(new Date()) + " 审核用时：" + getTimeString(interruptTime - startTime) + "，已超过时长限制，停止审核");
+                    log.warn(DateUtil.format(new Date()) + " 审核用时：" + getTimeString(interruptTime - startTime) + "，已超过时长限制，停止审核");
                     break;
                 }
+
                 Thread.sleep(1);
             }
 
         } catch (SQLException e) {
             System.out.println(DateUtil.format(new Date()) + "查询工商信息出错：" + e.getMessage());
+            log.warn(DateUtil.format(new Date()) + "查询工商信息出错：" + e.getMessage());
             e.printStackTrace();
         } catch (InterruptedException e) {
             System.out.println(DateUtil.format(new Date()) + e.getMessage());
@@ -74,6 +90,7 @@ public class JskpAutoAuditTask {
         }
         Long endTime = System.currentTimeMillis();
         System.out.println(DateUtil.format(new Date()) + " 此次处理了" + auditCounter + "条工商信息数据，耗时为：" + getTimeString(endTime - startTime));
+        log.warn(DateUtil.format(new Date()) + " 此次处理了" + auditCounter + "条工商信息数据，耗时为：" + getTimeString(endTime - startTime));
     }
 
     public JskpCardAudit getCardAudit(Map<String, Object> icbcInfoMap) {
@@ -98,6 +115,7 @@ public class JskpAutoAuditTask {
             }
         } catch (Exception e) {
             System.out.println("查询审核数据出错：" + e.getMessage());
+            log.warn("查询审核数据出错：" + e.getMessage());
             e.printStackTrace();
         }
         return cardAudit;
@@ -126,6 +144,7 @@ public class JskpAutoAuditTask {
             }
         } catch (Exception e) {
             System.out.println("查询正式库数据出错：" + e.getMessage());
+            log.warn("查询正式库数据出错：" + e.getMessage());
             e.printStackTrace();
         }
 
@@ -166,6 +185,7 @@ public class JskpAutoAuditTask {
         try {
             if (equals(icbcTaxid, cardAudit.getTaxid()) && equals(icbcName, cardAudit.getName())) {
                 boolean success = true;
+
                 if (card == null && (cardAudit.getCode() == null || cardAudit.getCode().trim().length() == 0)) {
                     JskpApiResponse<JskpCard> apiResponse = JskpHttpApi.addCard(cardAudit.toJson());
                     if (apiResponse == null || !apiResponse.getCode().equals("201")) {
@@ -177,9 +197,11 @@ public class JskpAutoAuditTask {
                         success = false;
                     }
                 }
+
                 if (success) {
                     JskpHttpApi.updateAuditStatus(cardAudit.getId(), PASS);
                 }
+
             } else {
                 JskpHttpApi.updateAuditStatus(cardAudit.getId(), UNPASS);
             }
