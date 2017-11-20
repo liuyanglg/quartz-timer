@@ -20,6 +20,7 @@
         <property name="locations">
             <list>
                 <value>classpath:resource/jdbc.properties</value>
+                <value>classpath:redis.properties</value>
                 <value>classpath:resource/jskp/jskp-auto-audit.properties</value>
             </list>
         </property>
@@ -155,7 +156,35 @@
                 <entry key="jskp.cmp.api.post.updateAuditStatus" value="${jskp.cmp.api.post.updateAuditStatus}"/>
                 <entry key="jskp.cmp.api.post.addCard" value="${jskp.cmp.api.post.addCard}"/>
                 <entry key="jskp.cmp.api.put.updateCard" value="${jskp.cmp.api.put.updateCard}"/>
+                <entry key="jskp.redis.auto.aduit.key" value="${jskp.redis.auto.aduit.key}"/>
             </map>
         </constructor-arg>
     </bean>
+
+    <bean id="jskpJedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxTotal" value="${redisJskpAutoAudit.pool.maxTotal}" />
+        <property name="maxWaitMillis" value="${redisJskpAutoAudit.pool.maxWaitMillis}" />
+        <property name="maxIdle" value="${redisJskpAutoAudit.pool.maxIdle}" />
+        <property name="testOnBorrow" value="${redisJskpAutoAudit.pool.testOnBorrow}" />
+    </bean>
+
+    <bean id="jskpJedisPool" class="redis.clients.jedis.JedisPool">
+        <constructor-arg name="host" value="${redisJskpAutoAudit.ip}"></constructor-arg>
+        <constructor-arg name="port" value="${redisJskpAutoAudit.port}"></constructor-arg>
+        <constructor-arg name="poolConfig" ref="jskpJedisPoolConfig"></constructor-arg>
+    </bean>
+
+    <!--<bean id="jskpRedisConnectionFactory"-->
+          <!--class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">-->
+        <!--<property name="hostName" value="${redisJskpAutoAudit.ip}" />-->
+        <!--<property name="port" value="${redisJskpAutoAudit.port}" />-->
+        <!--<property name="poolConfig" ref="jskpJedisPoolConfig" />-->
+    <!--</bean>-->
+
+    <!--<bean id="jskpRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate">-->
+        <!--<property name="connectionFactory">-->
+            <!--<ref bean="jskpRedisConnectionFactory" />-->
+        <!--</property>-->
+    <!--</bean>-->
+
 </beans>

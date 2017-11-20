@@ -106,7 +106,7 @@ public class JskpJdbcUtil {
         List<Object> params = new ArrayList<Object>();
         params.add(offset);
         params.add(pageSize);
-        list = JskpJdbcUtil.executeQuery(conn, sql, params);
+        list = executeQuery(conn, sql, params);
         return list;
     }
 
