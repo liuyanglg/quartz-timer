@@ -10,4 +10,6 @@ public interface JskpAuditDAO {
     int count(String sql)throws SQLException;
 
     int checkDB(String sql) throws SQLException;
+
+    int checkMongoDB(String taxid, String name) throws Exception;
 }

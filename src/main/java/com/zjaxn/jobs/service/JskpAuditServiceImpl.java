@@ -21,15 +21,13 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.*;
 
-import static com.zjaxn.jobs.tasks.JskpAutoAuditTask.popCounter;
-import static com.zjaxn.jobs.tasks.JskpAutoAuditTask.pushCounter;
 
 @Repository("jskpAuditService")
 public class JskpAuditServiceImpl implements JskpAuditService {
     public static final Integer UNAUDIT = 0;
     public static final Integer PASS = 1;
     public static final Integer UNPASS = -1;
-    public int lastId = 0;
+    private int lastId = 0;
 
     @Autowired
     @Qualifier("jskpAuditDAO")
@@ -41,12 +39,17 @@ public class JskpAuditServiceImpl implements JskpAuditService {
 
 
     public int getLastId() {
+        if (lastId == 0) {
+            lastId = getLastOffset();
+        }
         return lastId;
     }
 
     public void setLastId(int lastId) {
+        if (this.lastId != lastId) {
+            updateLastOffset(lastId);
+        }
         this.lastId = lastId;
-        updateLastOffset(lastId);
     }
 
     public List<Map<String, Object>> queryPage(int offset, int pageSize) {
@@ -59,6 +62,7 @@ public class JskpAuditServiceImpl implements JskpAuditService {
                 "FROM tb_cmp_card_audit A LEFT JOIN tb_cmp_card M ON A.code = M.code WHERE A.status=0 AND A.id>? LIMIT ?,?;";
 
         queryPageSql = queryPageSql.replaceFirst("\\?", lastId + "");
+//        System.out.println("sql: " + queryPageSql);
         try {
             list = jskpAuditDAO.queryPage(queryPageSql, offset, pageSize);
         } catch (SQLException e) {
@@ -85,25 +89,18 @@ public class JskpAuditServiceImpl implements JskpAuditService {
         return total;
     }
 
-    public boolean checkICBC(String taxid, String name) {
-        boolean bool = false;
-        if (taxid == null || name == null) {
-            return bool;
-        }
-
-        StringBuilder sql = new StringBuilder("SELECT COUNT(1) FROM mongo_complany WHERE ");
-        sql.append(" credit_code='" + taxid + "'");
-        sql.append(" AND name='" + name + "'");
-        int find = 0;
+    public int checkICBC(String taxid, String name) {
+//        StringBuilder sql = new StringBuilder("SELECT COUNT(1) FROM mongo_complany WHERE ");
+//        sql.append(" credit_code='" + taxid + "'");
+//        sql.append(" AND name='" + name + "'");
+        int find = UNAUDIT;
         try {
-            find = jskpAuditDAO.checkDB(sql.toString());
-        } catch (SQLException e) {
+//            find = jskpAuditDAO.checkDB(sql.toString());
+            find = jskpAuditDAO.checkMongoDB(taxid, name);
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        if (find > 0) {
-            bool = true;
-        }
-        return bool;
+        return find;
     }
 
 
@@ -143,10 +140,8 @@ public class JskpAuditServiceImpl implements JskpAuditService {
             String redisKey = (String) config.get("jskp.redis.auto.aduit.key");
             Pipeline pipeline = jedis.pipelined();
             for (Map map : list) {
-                pushCounter++;
                 Map mergeMap = mergeCardAudit(map);
                 if (mergeMap != null && mergeMap.size() > 0) {
-                    System.out.println(mergeMap);
                     pipeline.rpush(redisKey, JSON.toJSONString(mergeMap));
                 }
             }
@@ -186,7 +181,6 @@ public class JskpAuditServiceImpl implements JskpAuditService {
                     if (null == list) {
                         list = new ArrayList<JskpCardAudit>();
                     }
-                    popCounter++;
                     list.add(cardAudit);
                 }
             }
@@ -213,17 +207,17 @@ public class JskpAuditServiceImpl implements JskpAuditService {
                 String name = cardAudit.getName();
 
                 if (taxid != null && name != null) {
-                    sql = new StringBuilder("SELECT COUNT(1) FROM mongo_complany WHERE ");
-                    sql.append(" credit_code='" + taxid + "'");
-                    sql.append(" AND name='" + name + "'");
+//                    sql = new StringBuilder("SELECT COUNT(1) FROM mongo_complany WHERE ");
+//                    sql.append(" credit_code='" + taxid + "'");
+//                    sql.append(" AND name='" + name + "'");
 
-                    int find = jskpAuditDAO.count(sql.toString());
+                    int find = jskpAuditDAO.checkMongoDB(taxid, name);
 
-                    if (find <= 0) {
+                    if (find == UNPASS) {
                         JskpHttpApi.updateAuditStatus(cardAudit.getId(), UNPASS);
-                        System.out.println("UNPASS: "+cardAudit.getId());
+//                        System.out.println("UNPASS: " + cardAudit.getId());
 
-                    } else {
+                    } else if (find == PASS) {
                         boolean success = true;
 
                         if (code == null || code.length() != 6) {
@@ -240,7 +234,7 @@ public class JskpAuditServiceImpl implements JskpAuditService {
 
                         if (success) {
                             JskpHttpApi.updateAuditStatus(cardAudit.getId(), PASS);
-                            System.out.println("PASS: "+cardAudit.getId());
+                            System.out.println("PASS: " + cardAudit.getId());
                         }
 
                     }

@@ -1,10 +1,9 @@
 package com.zjaxn.jobs.tasks;
 
 import com.zjaxn.jobs.service.JskpAuditService;
-import com.zjaxn.jobs.service.JskpAuditServiceImpl;
 import com.zjaxn.jobs.support.JskpAuditPopThread;
 import com.zjaxn.jobs.support.JskpAuditPushThread;
-import com.zjaxn.jobs.utils.SpringUtil;
+import com.zjaxn.jobs.support.JskpMongoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -12,17 +11,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class JskpAutoAuditTask implements Runnable {
-    public static volatile boolean pushFinish = false;
-    public static long limitTime = 1000 * 60 * 60 * 5;
-    //    public static long limitTime = 1000 * 12;
-    public static volatile long startTime = 0L;
-    public static volatile int threadCounter = 2;
-    public static volatile int pushCounter = 0;
-    public static volatile int popCounter = 0;
+        public static long limitTime = 1000 * 60 * 60 * 5L;
+//    public static long limitTime = 1000 * 6;
+    public static volatile int threadCounter = 3;
+    public static volatile int threadNum = 2;
 
-    int total = 0;
-    int pages = 0;
-    int pageSize = 100;
 
     @Autowired
     @Qualifier("jskpAuditService")
@@ -30,90 +23,47 @@ public class JskpAutoAuditTask implements Runnable {
 
     @Override
     public void run() {
+        long startTime = System.currentTimeMillis();
+        JskpAuditPushThread pushThread = null;
 
-        startTime = System.currentTimeMillis();
-
-        if (jskpAuditService == null) {
-            jskpAuditService = (JskpAuditService) SpringUtil.getBean("jskpAuditService");
-        }
-        if (jskpAuditService == null) {
-            jskpAuditService = new JskpAuditServiceImpl();
-        }
-
-
-        total = jskpAuditService.count();
-        pages = total / pageSize;
-        if (total % pageSize != 0) {
-            pages++;
-        }
-
-        for(int i=0;i<pages;i++) {
-
-        }
-        JskpAuditPushThread pushThread = new JskpAuditPushThread();
+        pushThread = new JskpAuditPushThread(startTime);
         pushThread.start();
-
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ExecutorService pool = Executors.newFixedThreadPool(threadCounter);
-        for (int i = 0; i < threadCounter; i++) {
-            pool.execute(new JskpAuditPopThread());
-        }
-
-        boolean run = true;
-        while (run) {
+        while (threadCounter > 2) {
             try {
-                if (threadCounter <= 0 && pushFinish) {
-                    System.out.println("push: " + popCounter);
-                    System.out.println("pop: " + popCounter);
-                    run = false;
-                }
+                System.out.println("等待push完成：" + threadCounter);
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            } finally {
-                if (pool != null && !pool.isShutdown()) {
-                    pool.shutdown();
-                }
             }
         }
+
+        ExecutorService pool = Executors.newFixedThreadPool(threadCounter);
+        for (int t = 0; t < threadNum; t++) {
+            pool.execute(new JskpAuditPopThread(startTime));
+        }
+
+        while (threadCounter > 0) {
+            try {
+                Thread.sleep(5000);
+                System.out.println("等待pop结束:  " + threadCounter);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if (pool != null && !pool.isShutdown()) {
+            pool.shutdown();
+        }
+        JskpMongoUtil.getInstance().close();
 
         long endTime = System.currentTimeMillis();
         System.out.println("用时：" + getTimeString(endTime - startTime));
     }
 
-    public static synchronized void setPushFinish(boolean pushFinish) {
-        JskpAutoAuditTask.pushFinish = pushFinish;
-    }
-
-    public static synchronized long getStartTime() {
-        return startTime;
-    }
-
     public static synchronized void countDown() {
+        System.out.println("counter:" + threadCounter);
         threadCounter--;
-//        log.info(DateUtil.format(new Date()) + threadName + " finished,running thread: " + threadCounter);
     }
 
-    public static synchronized int getPushCounter() {
-        return pushCounter;
-    }
-
-    public static synchronized void setPushCounter(int pushCounter) {
-        JskpAutoAuditTask.pushCounter = pushCounter;
-    }
-
-    public static synchronized int getPopCounter() {
-        return popCounter;
-    }
-
-    public static synchronized void setPopCounter(int popCounter) {
-        JskpAutoAuditTask.popCounter = popCounter;
-    }
 
     public String getTimeString(Long useTime) {
         StringBuffer timeBuffer = new StringBuffer();

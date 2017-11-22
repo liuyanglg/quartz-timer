@@ -6,8 +6,11 @@ import org.junit.Test;
 public class JskpAuditPushThreadTest extends BaseTest{
     @Test
     public void task() throws Exception {
-        JskpAuditPushThread thread = new JskpAuditPushThread();
-        thread.start();
+        for(int i=0;i<30;i++){
+//            JskpAuditPushThread thread = new JskpAuditPushThread();
+//            thread.start();
+            Thread.sleep(2000);
+        }
         while (true){}
     }
 

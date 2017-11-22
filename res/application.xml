@@ -21,6 +21,8 @@
             <list>
                 <value>classpath:resource/jdbc.properties</value>
                 <value>classpath:redis.properties</value>
+                <value>classpath:redis.properties</value>
+                <value>classpath:resource/mongoDB.properties</value>
                 <value>classpath:resource/jskp/jskp-auto-audit.properties</value>
             </list>
         </property>
@@ -135,6 +137,8 @@
         <property name="password" value="${cmp.dataserver.jdbc.password}"/>
         <property name="initialSize" value="20"/>
         <property name="maxActive" value="200"/>
+        <property name="removeAbandonedTimeout" value="180"/>
+        <property name="maxWait" value="500"/>
     </bean>
 
     <bean id="jskpJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
@@ -162,6 +166,7 @@
                 <entry key="jskp.cmp.api.post.addCard" value="${jskp.cmp.api.post.addCard}"/>
                 <entry key="jskp.cmp.api.put.updateCard" value="${jskp.cmp.api.put.updateCard}"/>
                 <entry key="jskp.redis.auto.aduit.key" value="${jskp.redis.auto.aduit.key}"/>
+                <entry key="jskp.redis.big.data.key" value="${jskp.redis.big.data.key}"/>
             </map>
         </constructor-arg>
     </bean>
@@ -179,17 +184,27 @@
         <constructor-arg name="poolConfig" ref="jskpJedisPoolConfig"></constructor-arg>
     </bean>
 
-    <bean id="jskpRedisConnectionFactory"
-          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
-        <property name="hostName" value="${redisJskpAutoAudit.ip}"/>
-        <property name="port" value="${redisJskpAutoAudit.port}"/>
-        <property name="poolConfig" ref="jskpJedisPoolConfig"/>
+    <bean id="jskpBigDataJedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxTotal" value="${redisJskpAutoAudit.pool.maxTotal}"/>
+        <property name="maxWaitMillis" value="${redisJskpAutoAudit.pool.maxWaitMillis}"/>
+        <property name="maxIdle" value="${redisJskpAutoAudit.pool.maxIdle}"/>
+        <property name="testOnBorrow" value="${redisJskpAutoAudit.pool.testOnBorrow}"/>
     </bean>
 
-    <bean id="jskpRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
-        <property name="connectionFactory">
-            <ref bean="jskpRedisConnectionFactory"/>
-        </property>
+    <bean id="jskpBigDataJedisPool" class="redis.clients.jedis.JedisPool">
+        <constructor-arg name="host" value="${redisJskpAutoAudit.ip}"></constructor-arg>
+        <constructor-arg name="port" value="${redisJskpAutoAudit.port}"></constructor-arg>
+        <constructor-arg name="poolConfig" ref="jskpJedisPoolConfig"></constructor-arg>
+    </bean>
+
+
+
+    <bean id="jskpMongoDBConfig" class="com.zjaxn.jobs.support.JskpMongoDBConfig">
+        <property name="serverAdress" value="${jskp.mongo.serveraddress}"/>
+        <property name="database" value="${jskp.mongo.database}"/>
+        <property name="userName" value="${jskp.mongo.username}"/>
+        <property name="password" value="${jskp.mongo.password}"/>
+        <property name="tablename" value="${jskp.mongo.tablename}"/>
     </bean>
 
 </beans>

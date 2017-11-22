@@ -20,4 +20,6 @@ public interface JskpAuditService {
     void setLastId(int id);
 
     int getLastId();
+
+    int checkICBC(String taxid, String name);
 }
