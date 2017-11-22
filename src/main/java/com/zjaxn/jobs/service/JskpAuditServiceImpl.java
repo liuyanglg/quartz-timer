@@ -34,6 +34,10 @@ public class JskpAuditServiceImpl implements JskpAuditService {
     private JskpAuditDAO jskpAuditDAO;
 
     @Autowired
+    @Qualifier("jskpBigDataJedisPool")
+    private JedisPool jskpBigDataJedisPool;
+
+    @Autowired
     @Qualifier("jskpJedisPool")
     private JedisPool jskpJedisPool;
 
@@ -150,7 +154,31 @@ public class JskpAuditServiceImpl implements JskpAuditService {
             flag = false;
             e.printStackTrace();
         } finally {
-            close(jedis, flag);
+            close(jskpJedisPool,jedis, flag);
+        }
+    }
+
+    public void pushBigDataRedis(List<Map<String, Object>> list) {
+        boolean flag = true;
+        Jedis jedis = null;
+        try {
+            jedis = jskpBigDataJedisPool.getResource();
+
+            Map config = (Map) SpringUtil.getBean("jskpCmpApiMap");
+            String redisKey = (String) config.get("jskp.redis.big.data.key");
+            Pipeline pipeline = jedis.pipelined();
+            for (Map map : list) {
+                Map mergeMap = mergeCardAudit(map);
+                if (mergeMap != null && mergeMap.size() > 0) {
+                    pipeline.sadd(redisKey, JSON.toJSONString(mergeMap));
+                }
+            }
+            pipeline.sync();
+        } catch (Exception e) {
+            flag = false;
+            e.printStackTrace();
+        } finally {
+            close(jskpBigDataJedisPool,jedis, flag);
         }
     }
 
@@ -188,7 +216,7 @@ public class JskpAuditServiceImpl implements JskpAuditService {
             flag = false;
             e.printStackTrace();
         } finally {
-            close(jedis, flag);
+            close(jskpJedisPool,jedis, flag);
         }
         return list;
     }
@@ -272,20 +300,20 @@ public class JskpAuditServiceImpl implements JskpAuditService {
         return mergeMap;
     }
 
-    public void close(Jedis jedis, boolean flag) {
+    public void close(JedisPool jedisPool,Jedis jedis, boolean flag) {
         if (jedis != null) {
             if (!flag) {
-                jskpJedisPool.returnResource(jedis);
+                jedisPool.returnResource(jedis);
             } else {
-                jskpJedisPool.returnBrokenResource(jedis);
+                jedisPool.returnBrokenResource(jedis);
             }
             jedis.close();
         }
     }
 
-    public void close(Jedis jedis) {
+    public void close(JedisPool jedisPool,Jedis jedis) {
         if (jedis != null) {
-            jskpJedisPool.returnResource(jedis);
+            jedisPool.returnResource(jedis);
             jedis.close();
         }
     }

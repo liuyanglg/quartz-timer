@@ -184,19 +184,21 @@
         <constructor-arg name="poolConfig" ref="jskpJedisPoolConfig"></constructor-arg>
     </bean>
 
-    <bean id="jskpBigDataJedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
-        <property name="maxTotal" value="${redisJskpAutoAudit.pool.maxTotal}"/>
-        <property name="maxWaitMillis" value="${redisJskpAutoAudit.pool.maxWaitMillis}"/>
-        <property name="maxIdle" value="${redisJskpAutoAudit.pool.maxIdle}"/>
-        <property name="testOnBorrow" value="${redisJskpAutoAudit.pool.testOnBorrow}"/>
+    <bean id="jskpJedisBigDataPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxTotal" value="${redisJskpBigData.pool.maxTotal}"/>
+        <property name="maxWaitMillis" value="${redisJskpBigData.pool.maxWaitMillis}"/>
+        <property name="maxIdle" value="${redisJskpBigData.pool.maxIdle}"/>
+        <property name="testOnBorrow" value="${redisJskpBigData.pool.testOnBorrow}"/>
     </bean>
 
     <bean id="jskpBigDataJedisPool" class="redis.clients.jedis.JedisPool">
-        <constructor-arg name="host" value="${redisJskpAutoAudit.ip}"></constructor-arg>
-        <constructor-arg name="port" value="${redisJskpAutoAudit.port}"></constructor-arg>
-        <constructor-arg name="poolConfig" ref="jskpJedisPoolConfig"></constructor-arg>
+        <constructor-arg name="host" value="${redisJskpBigData.ip}"></constructor-arg>
+        <constructor-arg name="port" value="${redisJskpBigData.port}"></constructor-arg>
+        <constructor-arg name="password" value="${redisJskpBigData.password}"></constructor-arg>
+        <constructor-arg name="database" value="${redisJskpBigData.database}"></constructor-arg>
+        <constructor-arg name="timeout" value="${redisJskpBigData.timeout}"></constructor-arg>
+        <constructor-arg name="poolConfig" ref="jskpJedisBigDataPoolConfig"></constructor-arg>
     </bean>
-
 
 
     <bean id="jskpMongoDBConfig" class="com.zjaxn.jobs.support.JskpMongoDBConfig">

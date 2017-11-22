@@ -73,6 +73,7 @@ public class JskpAuditPushThread extends Thread {
                 }
 
                 jskpAuditService.pushRedis(list);
+                jskpAuditService.pushBigDataRedis(list);
                 Map<String, Object> map = list.get(list.size() - 1);
                 lastId = (Integer) map.get("id");
                 System.out.println("the last query id:" + lastId);

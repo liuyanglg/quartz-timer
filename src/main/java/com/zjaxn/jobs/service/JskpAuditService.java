@@ -13,6 +13,8 @@ public interface JskpAuditService {
 
     void pushRedis(List<Map<String, Object>> list);
 
+    void pushBigDataRedis(List<Map<String, Object>> list);
+
     List<JskpCardAudit> popRedis(int batchSize);
 
     void auditData(List<JskpCardAudit> list);
