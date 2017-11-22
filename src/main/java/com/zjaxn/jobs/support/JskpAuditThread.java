@@ -4,34 +4,62 @@ import com.alibaba.fastjson.JSON;
 import com.zjaxn.jobs.utils.SpringUtil;
 import com.zjaxn.jobs.utils.model.JskpCard;
 import com.zjaxn.jobs.utils.model.JskpCardAudit;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 
 import java.sql.Connection;
 import java.util.*;
 
-public class JskpAuditThread {
+import static com.zjaxn.jobs.tasks.JskpAutoAuditTask.pushFinish;
+
+public class JskpAuditThread implements Runnable {
+
     public static final Integer UNAUDIT = 0;
     public static final Integer PASS = 1;
     public static final Integer UNPASS = -1;
 
+    private String threadName = null;
+
+    private Jedis jedis = null;
+
+    @Autowired
+    @Qualifier("jskpRedisConnectionFactory")
+    private JedisConnectionFactory jskpRedisConnectionFactory;
+
+    @Override
+    public void run() {
+        threadName = " [" + Thread.currentThread().getName() + "] ";
+
+        System.out.println(threadName+" start！");
+        batchAutoAudit();
+        System.out.println(threadName+" end！");
+    }
 
     public void batchAutoAudit() {
         boolean exit = true;
         while (exit) {
             List<JskpCardAudit> list = lpopRedis();
-            if (list != null&&list.size()>0) {
+            if (list != null && list.size() > 0) {
                 auditData(list);
-            }else {
-                exit = false;
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                if (pushFinish) {
+                    exit = false;
+                }
             }
         }
     }
 
     public List<JskpCardAudit> lpopRedis() {
-        Jedis jedis = getJedis();
+        jedis = getJedis();
         if (null == jedis) {
             return null;
         }
@@ -41,7 +69,7 @@ public class JskpAuditThread {
 
         List<JskpCardAudit> list = null;
 
-        int batchSize = 100;
+        int batchSize = 2;
 
 
         Set<Response<String>> responseSet = new LinkedHashSet<Response<String>>();
@@ -74,8 +102,9 @@ public class JskpAuditThread {
                 list.add(cardAudit);
             }
         }
-
-        System.out.println(list);
+        if (list != null) {
+            System.out.println(threadName+": fetch " +list.size());
+        }
         return list;
     }
 
@@ -131,8 +160,12 @@ public class JskpAuditThread {
     }
 
     public Jedis getJedis() {
-        JedisPool jedisPool = (JedisPool) SpringUtil.getBean("jskpJedisPool");
-        Jedis jedis = jedisPool.getResource();
+//        JedisPool jedisPool = (JedisPool) SpringUtil.getBean("jskpJedisPool");
+        jskpRedisConnectionFactory = (JedisConnectionFactory) SpringUtil.getBean("jskpRedisConnectionFactory");
+//        Jedis jedis = jedisPool.getResource();
+        if(jedis==null){
+            jedis = jskpRedisConnectionFactory.getConnection().getNativeConnection();
+        }
         return jedis;
     }
 }

@@ -7,7 +7,7 @@ public class JskpPushThreadTest extends BaseTest {
     @Test
     public void pushQueryData() throws Exception {
         JskpPushThread jskpPushThread = new JskpPushThread();
-        jskpPushThread.pushQueryData();
+        jskpPushThread.run();
     }
 
     @Test

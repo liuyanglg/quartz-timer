@@ -13,6 +13,10 @@ import java.util.Properties;
 
 public class JskpAutoAuditTaskTest extends BaseTest {
     @Test
+    public void setPushFinish() throws Exception {
+    }
+
+    @Test
     public void autoAuditCard() throws Exception {
         Runnable r = new Runnable() {
 
@@ -34,7 +38,31 @@ public class JskpAutoAuditTaskTest extends BaseTest {
         t.start();
 
         JskpAutoAuditTask jskpAutoAuditTask = new JskpAutoAuditTask();
-        jskpAutoAuditTask.batchAutoAudit();
+        jskpAutoAuditTask.run();
+    }
 
+    @Test
+    public void autoAuditCard2() throws Exception {
+        Runnable r = new Runnable() {
+
+            @Override
+            public void run() {
+                InputStream is = Executor.class.getResourceAsStream("/log4j.properties");
+                Properties properties = new Properties();
+                try {
+                    properties.load(is);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                PropertyConfigurator.configure(properties);
+                @SuppressWarnings("resource")
+                ApplicationContext applicationContext = new ClassPathXmlApplicationContext("application.xml");
+            }
+        };
+        Thread t = new Thread(r);
+        t.start();
+
+        JskpAutoAuditTask jskpAutoAuditTask = new JskpAutoAuditTask();
+        jskpAutoAuditTask.run();
     }
 }

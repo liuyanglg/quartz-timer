@@ -56,10 +56,6 @@
         <property name="maxWait">
             <value>${cmp.maxWait}</value>
         </property>
-        <!-- 连接池最大空闲 -->
-        <property name="maxIdle">
-            <value>${cmp.maxIdle}</value>
-        </property>
         <!-- 连接池最小空闲 -->
         <property name="minIdle">
             <value>${cmp.minIdle}</value>
@@ -105,10 +101,6 @@
         <property name="maxWait">
             <value>${cmp.maxWait}</value>
         </property>
-        <!-- 连接池最大空闲 -->
-        <property name="maxIdle">
-            <value>${cmp.maxIdle}</value>
-        </property>
         <!-- 连接池最小空闲 -->
         <property name="minIdle">
             <value>${cmp.minIdle}</value>
@@ -136,14 +128,27 @@
         <property name="cmpConnectionFactory" ref="cmpConnectionFactory"/>
     </bean>
 
+    <bean id="dataSourceJskp" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <property name="driverClassName" value="${cmp.dataserver.jdbc.driver}"/>
+        <property name="url" value="${cmp.dataserver.jdbc.url}"/>
+        <property name="username" value="${cmp.dataserver.jdbc.username}"/>
+        <property name="password" value="${cmp.dataserver.jdbc.password}"/>
+        <property name="initialSize" value="20"/>
+        <property name="maxActive" value="200"/>
+    </bean>
+
+    <bean id="jskpJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSourceJskp"/>
+    </bean>
+
     <bean id="connectionFactory" class="com.zjaxn.jobs.support.ConnectionFactory">
         <property name="dataSources">
             <map>
-                <entry key="dataserver" value-ref="dataSourceCmp"/>
+                <entry key="dataserver" value-ref="dataSourceJskp"/>
             </map>
         </property>
     </bean>
-    
+
     <bean id="jskpCmpApiMap" class="java.util.HashMap">
         <constructor-arg>
             <map>
@@ -162,10 +167,10 @@
     </bean>
 
     <bean id="jskpJedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
-        <property name="maxTotal" value="${redisJskpAutoAudit.pool.maxTotal}" />
-        <property name="maxWaitMillis" value="${redisJskpAutoAudit.pool.maxWaitMillis}" />
-        <property name="maxIdle" value="${redisJskpAutoAudit.pool.maxIdle}" />
-        <property name="testOnBorrow" value="${redisJskpAutoAudit.pool.testOnBorrow}" />
+        <property name="maxTotal" value="${redisJskpAutoAudit.pool.maxTotal}"/>
+        <property name="maxWaitMillis" value="${redisJskpAutoAudit.pool.maxWaitMillis}"/>
+        <property name="maxIdle" value="${redisJskpAutoAudit.pool.maxIdle}"/>
+        <property name="testOnBorrow" value="${redisJskpAutoAudit.pool.testOnBorrow}"/>
     </bean>
 
     <bean id="jskpJedisPool" class="redis.clients.jedis.JedisPool">
@@ -174,17 +179,17 @@
         <constructor-arg name="poolConfig" ref="jskpJedisPoolConfig"></constructor-arg>
     </bean>
 
-    <!--<bean id="jskpRedisConnectionFactory"-->
-          <!--class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">-->
-        <!--<property name="hostName" value="${redisJskpAutoAudit.ip}" />-->
-        <!--<property name="port" value="${redisJskpAutoAudit.port}" />-->
-        <!--<property name="poolConfig" ref="jskpJedisPoolConfig" />-->
-    <!--</bean>-->
+    <bean id="jskpRedisConnectionFactory"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+        <property name="hostName" value="${redisJskpAutoAudit.ip}"/>
+        <property name="port" value="${redisJskpAutoAudit.port}"/>
+        <property name="poolConfig" ref="jskpJedisPoolConfig"/>
+    </bean>
 
-    <!--<bean id="jskpRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate">-->
-        <!--<property name="connectionFactory">-->
-            <!--<ref bean="jskpRedisConnectionFactory" />-->
-        <!--</property>-->
-    <!--</bean>-->
+    <bean id="jskpRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+        <property name="connectionFactory">
+            <ref bean="jskpRedisConnectionFactory"/>
+        </property>
+    </bean>
 
 </beans>
