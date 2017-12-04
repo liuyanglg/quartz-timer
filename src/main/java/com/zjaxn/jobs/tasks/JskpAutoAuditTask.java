@@ -1,69 +1,87 @@
 package com.zjaxn.jobs.tasks;
 
-import com.zjaxn.jobs.service.JskpAuditService;
 import com.zjaxn.jobs.support.JskpAuditPopThread;
 import com.zjaxn.jobs.support.JskpAuditPushThread;
-import com.zjaxn.jobs.support.JskpMongoUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.zjaxn.jobs.utils.DateUtil;
+import org.apache.log4j.Logger;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.springframework.scheduling.quartz.QuartzJobBean;
 
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class JskpAutoAuditTask implements Runnable {
-        public static long limitTime = 1000 * 60 * 60 * 5L;
-//    public static long limitTime = 1000 * 6;
-    public static volatile int threadCounter = 3;
-    public static volatile int threadNum = 2;
+/**
+ * @package : com.zjaxn.jobs.tasks
+ * @class : JskpAutoAuditTask
+ * @description : 自动审核任务
+ * @author : liuya
+ * @date : 2017-11-23 星期四 10:18:32
+ * @version : V1.0.0
+ * @copyright : 2017 liuya Inc. All rights reserved.
+ */
+public class JskpAutoAuditTask extends QuartzJobBean {
+    private static Logger LOG = Logger.getLogger(JskpAutoAuditTask.class);
 
+    public static long timeOut = 1000 * 60 * 60 * 5L;
+    private static volatile int counter = 3;//线程计数
+    private static volatile int auditThreadNum = 2;//审核线程数
+    private long startTime;
+    private long endTime;
 
-    @Autowired
-    @Qualifier("jskpAuditService")
-    private JskpAuditService jskpAuditService;
+    public static void setTimeOut(long timeOut) {
+        JskpAutoAuditTask.timeOut = timeOut;
+    }
 
     @Override
-    public void run() {
-        long startTime = System.currentTimeMillis();
-        JskpAuditPushThread pushThread = null;
+    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        System.out.println("[" + DateUtil.format(new Date()) + "] jskp:" + " 极速开票自动审核任务开始......");
+        LOG.error("[" + DateUtil.format(new Date()) + "] jskp:" + " 极速开票自动审核任务开始......");
+        startTime = System.currentTimeMillis();
 
-        pushThread = new JskpAuditPushThread(startTime);
+        task();
+
+        endTime = System.currentTimeMillis();
+        System.out.println("[" + DateUtil.format(new Date()) + "] jskp:" + " 极速开票自动审核任务结束，用时：" + getTimeString(endTime - startTime));
+        LOG.error("[" + DateUtil.format(new Date()) + "] jskp:" + " 极速开票自动审核任务结束，用时：" + getTimeString(endTime - startTime));
+    }
+
+    public void task() {
+        counter = 3;
+        auditThreadNum = 2;
+
+        JskpAuditPushThread pushThread = new JskpAuditPushThread(startTime);
         pushThread.start();
-        while (threadCounter > 2) {
+
+        while (counter > 2) {
             try {
-                System.out.println("等待push完成：" + threadCounter);
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
+                System.out.println(e.getMessage());
+                LOG.error(e.getMessage());
                 e.printStackTrace();
             }
         }
 
-        ExecutorService pool = Executors.newFixedThreadPool(threadCounter);
-        for (int t = 0; t < threadNum; t++) {
+        ExecutorService pool = Executors.newFixedThreadPool(counter);
+        for (int t = 0; t < auditThreadNum; t++) {
             pool.execute(new JskpAuditPopThread(startTime));
         }
 
-        while (threadCounter > 0) {
+        while (counter > 0) {
             try {
                 Thread.sleep(5000);
-                System.out.println("等待pop结束:  " + threadCounter);
             } catch (InterruptedException e) {
+                System.out.println(e.getMessage());
+                LOG.error(e.getMessage());
                 e.printStackTrace();
             }
         }
         if (pool != null && !pool.isShutdown()) {
             pool.shutdown();
         }
-        JskpMongoUtil.getInstance().close();
-
-        long endTime = System.currentTimeMillis();
-        System.out.println("用时：" + getTimeString(endTime - startTime));
     }
-
-    public static synchronized void countDown() {
-        System.out.println("counter:" + threadCounter);
-        threadCounter--;
-    }
-
 
     public String getTimeString(Long useTime) {
         StringBuffer timeBuffer = new StringBuffer();
@@ -84,5 +102,9 @@ public class JskpAutoAuditTask implements Runnable {
             timeBuffer.append(ms + "毫秒");
         }
         return timeBuffer.toString();
+    }
+
+    public static synchronized void countDown() {
+        counter--;
     }
 }

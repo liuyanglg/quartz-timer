@@ -2,7 +2,7 @@ package com.zjaxn.jobs.support;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
-import com.zjaxn.jobs.utils.SpringUtil;
+import com.zjaxn.jobs.service.util.SpringUtils;
 import com.zjaxn.jobs.utils.model.JskpCard;
 import com.zjaxn.jobs.utils.model.JskpCardAudit;
 import org.apache.http.HttpEntity;
@@ -14,10 +14,13 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 
 import java.util.Map;
 
 public class JskpHttpApi {
+    private static Logger LOG = Logger.getLogger(JskpHttpApi.class);
+
 
     public static JskpApiResponse getCardAuditByTaxid(String taxid) throws Exception {
         if (taxid == null) {
@@ -27,7 +30,7 @@ public class JskpHttpApi {
             return null;
         }
 
-        Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
+        Map apiConfig = (Map) SpringUtils.getBean("jskpCmpApiMap");
         JskpApiResponse<JskpCardAudit> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.get.getCardAuditByTaxid");
         url = url.replaceFirst("\\{\\S*\\}", taxid.trim());
@@ -60,7 +63,7 @@ public class JskpHttpApi {
             return null;
         }
 
-        Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
+        Map apiConfig = (Map) SpringUtils.getBean("jskpCmpApiMap");
         JskpApiResponse<JskpCardAudit> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.get.getCardAuditByName");
         url = url.replaceFirst("\\{\\S*\\}", name.trim());
@@ -93,7 +96,7 @@ public class JskpHttpApi {
             return null;
         }
 
-        Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
+        Map apiConfig = (Map) SpringUtils.getBean("jskpCmpApiMap");
         JskpApiResponse<JskpCard> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.get.getCardByCode");
         url = url.replaceFirst("\\{\\S*\\}", code.trim());
@@ -126,7 +129,7 @@ public class JskpHttpApi {
             return null;
         }
 
-        Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
+        Map apiConfig = (Map) SpringUtils.getBean("jskpCmpApiMap");
         JskpApiResponse<JskpCard> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.get.getCardByTaxid");
         url = url.replaceFirst("\\{\\S*\\}", taxid.trim());
@@ -159,7 +162,7 @@ public class JskpHttpApi {
             return null;
         }
 
-        Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
+        Map apiConfig = (Map) SpringUtils.getBean("jskpCmpApiMap");
         JskpApiResponse<JskpCard> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.get.getCardByName");
         url = url.replaceFirst("\\{\\S*\\}", name.trim());
@@ -184,7 +187,15 @@ public class JskpHttpApi {
         return apiResponse;
     }
 
-
+    /**
+     * @method : updateAuditStatus
+     * @description : 更新审核数据审核状态
+     * @param id : 审核数据id
+     * @param status :  审核状态
+     * @return : com.zjaxn.jobs.support.JskpApiResponse
+     * @author : liuya
+     * @date : 2017-11-23 星期四 10:14:02
+     */
     public static JskpApiResponse updateAuditStatus(Integer id, Integer status) throws Exception {
         if (id == null) {
             return null;
@@ -193,7 +204,7 @@ public class JskpHttpApi {
             return null;
         }
 
-        Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
+        Map apiConfig = (Map) SpringUtils.getBean("jskpCmpApiMap");
         JskpApiResponse<JskpCardAudit> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.post.updateAuditStatus");
         url = url.replaceFirst("\\{\\S*\\}", id + "");
@@ -215,6 +226,8 @@ public class JskpHttpApi {
                 });
             }
         } catch (Exception e) {
+            System.out.println(e.getMessage());
+            LOG.error(e.getMessage());
             e.printStackTrace();
         } finally {
             if (closeableHttpClient != null) {
@@ -229,7 +242,7 @@ public class JskpHttpApi {
             return null;
         }
 
-        Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
+        Map apiConfig = (Map) SpringUtils.getBean("jskpCmpApiMap");
         JskpApiResponse<JskpCard> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.post.addCard");
 
@@ -248,6 +261,7 @@ public class JskpHttpApi {
                 });
             }
         } catch (Exception e) {
+            LOG.error(e.getMessage());
             e.printStackTrace();
         } finally {
             if (closeableHttpClient != null) {
@@ -269,7 +283,7 @@ public class JskpHttpApi {
             return null;
         }
 
-        Map apiConfig = (Map) SpringUtil.getBean("jskpCmpApiMap");
+        Map apiConfig = (Map) SpringUtils.getBean("jskpCmpApiMap");
         JskpApiResponse<JskpCard> apiResponse = null;
         String url = (String) apiConfig.get("jskp.cmp.url") + apiConfig.get("jskp.cmp.api.put.updateCard");
         url = url.replaceFirst("\\{\\S*\\}", code.trim());
@@ -289,6 +303,7 @@ public class JskpHttpApi {
                 });
             }
         } catch (Exception e) {
+            LOG.error(e.getMessage());
             e.printStackTrace();
         } finally {
             if (closeableHttpClient != null) {

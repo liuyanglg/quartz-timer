@@ -42,4 +42,49 @@
             </list>
         </property>
     </bean>
+
+    <!--极速开票自动审核定时任务-->
+    <bean name="jskpAutoAduitJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="com.zjaxn.jobs.tasks.JskpAutoAuditTask"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="timeOut" value="20000"/>
+            </map>
+        </property>
+        <property name="durability" value="true"/>
+    </bean>
+
+
+    <bean id="jskpAutoAduitCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="jskpAutoAduitJobDetail"/>
+        <!--执行时间每天23:00-->
+        <property name="cronExpression" value="0 0/3 * * * ?"/>
+    </bean>
+
+    <!--极速开票自动审核定时任务2-->
+    <bean name="jskpAutoAduitJobDetail2" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="com.zjaxn.jobs.tasks.JskpAutoAuditTask"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="timeOut" value="6000000"/>
+            </map>
+        </property>
+        <property name="durability" value="true"/>
+    </bean>
+
+
+    <bean id="jskpAutoAduitCronTrigger2" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="jskpAutoAduitJobDetail2"/>
+        <!--执行时间每天1:00-->
+        <property name="cronExpression" value="0 0 1 * * ?"/>
+    </bean>
+
+    <bean id="jskpAutoAduitScheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="jskpAutoAduitCronTrigger"/>
+                <ref bean="jskpAutoAduitCronTrigger2"/>
+            </list>
+        </property>
+    </bean>
 </beans>

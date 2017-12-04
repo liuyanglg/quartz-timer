@@ -29,7 +29,7 @@ public class JskpMongoUtilTest extends BaseTest {
     public void getInstance2() throws Exception {
         JskpMongoUtil mongoUtil = new JskpMongoUtil();
         String taxid = "913202045754275581";
-        String json = mongoUtil.getData("_id", "无锡市美昌嘉制冷设备有限公司");
+        String json = mongoUtil.getData("_id", "南京市白下区竺子华农副产品配送中心");
         Map<String, String> map = JSON.parseObject(json, new TypeReference<Map<String, String>>() {
         });
         if (map != null) {
